@@ -1,5 +1,6 @@
 package ru.spbau.mit
 
+import java.io.OutputStream
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -24,9 +25,9 @@ class StackFrame {
     }
 }
 
-class Context {
+class Context(val stdout: OutputStream) {
     private val callStack = LinkedList<StackFrame>()
-    private val top = callStack.first
+    private val top get() = callStack.first
 
     var maxStackSize = 1000
 
@@ -49,6 +50,7 @@ class Context {
             val oldValue = frame.getVar(name)
             if (oldValue != null) {
                 frame.addVar(name, value)
+                return
             }
         }
         throw UnknownIdentifierException(name, this)
@@ -81,8 +83,8 @@ class Context {
 }
 
 data class File(val block: Block) {
-    fun perform() {
-        block.perform(Context())
+    fun perform(stdout: OutputStream = System.out) {
+        block.perform(Context(stdout))
     }
 }
 
@@ -99,6 +101,14 @@ data class Variable(val name: String, val expr: Expression): Statement() {
 data class While(val cond: Expression, val block: Block): Statement() {
     override fun perform(ctx: Context) {
         while (cond.evaluate(ctx) != 0) {
+            block.perform(ctx)
+        }
+    }
+}
+
+data class If(val cond: Expression, val block: Block): Statement() {
+    override fun perform(ctx: Context) {
+        if (cond.evaluate(ctx) != 0) {
             block.perform(ctx)
         }
     }
@@ -138,7 +148,14 @@ data class Plus(val lhs: Expression, val rhs: Expression): Expression() {
     override fun evaluate(ctx: Context): Int = lhs.evaluate(ctx) + rhs.evaluate(ctx)
 }
 
-//class Minus(lhs: Expression, rhs: Expression): BinaryExpression(lhs, rhs)
+data class Minus(val lhs: Expression, val rhs: Expression): Expression() {
+    override fun evaluate(ctx: Context): Int = lhs.evaluate(ctx) - rhs.evaluate(ctx)
+}
+
+data class LessEqual(val lhs: Expression, val rhs: Expression): Expression() {
+    override fun evaluate(ctx: Context): Int = if (lhs.evaluate(ctx) <= rhs.evaluate(ctx)) 1 else 0
+}
+
 //class Times(lhs: Expression, rhs: Expression): BinaryExpression(lhs, rhs)
 //class Div(lhs: Expression, rhs: Expression): BinaryExpression(lhs, rhs)
 //class Modulo(lhs: Expression, rhs: Expression): BinaryExpression(lhs, rhs)
@@ -146,7 +163,7 @@ data class Plus(val lhs: Expression, val rhs: Expression): Expression() {
 //class Less(lhs: Expression, rhs: Expression): BinaryExpression(lhs, rhs)
 // TODO: >=, <=, ==, !=, ||, &&
 
-data class Regerence(val name: String): Expression() {
+data class Reference(val name: String): Expression() {
     override fun evaluate(ctx: Context): Int = ctx.getVar(name)
 }
 
@@ -177,11 +194,7 @@ data class Block(val statements: List<Statement>): Statement() {
 
 data class PrintlnCall(val args: List<Expression>): Statement() {
     override fun perform(ctx: Context) {
-        for (arg in args) {
-            print(arg)
-            print(' ')
-        }
-        println()
+        ctx.stdout.write(args.joinToString(postfix = "\n") { it.evaluate(ctx).toString() }.toByteArray())
     }
 }
 
