@@ -40,4 +40,10 @@ class IntegrationTest {
 //        recordResult("returnExample")
         integrationTest("returnExample")
     }
+
+    @Test
+    fun associativityTest() {
+//        recordResult("returnExample")
+        integrationTest("associativity")
+    }
 }

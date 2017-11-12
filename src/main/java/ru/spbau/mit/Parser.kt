@@ -70,15 +70,14 @@ object ANTLRVisitor : HwLangBaseVisitor<Node>() {
             Literal(ctx.text.toInt(), ctx.start.line)
 
     override fun visitExpression(ctx: HwLangParser.ExpressionContext): Node {
-        val lhs = visitLhsExpression(ctx.lhs_) as Expression
-        if (ctx.binaryOperation_ == null) {
-            return lhs
+        if (ctx.binOp_ != null) {
+            return BinaryOperation(
+                    visit(ctx.lhs_) as Expression,
+                    ctx.binOp_.text,
+                    visit(ctx.rhs_) as Expression,
+                    ctx.start.line)
+        } else {
+            return visitChildren(ctx)
         }
-        val rhs = visitExpression(ctx.binaryOperation_.rhs_) as Expression
-        return BinaryOperation(lhs,ctx.binaryOperation_.op_.text, rhs, ctx.start.line)
-    }
-
-    override fun visitErrorNode(node: ErrorNode?): Node {
-        return super.visitErrorNode(node)
     }
 }
