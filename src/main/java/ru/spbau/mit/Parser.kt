@@ -60,6 +60,6 @@ object ANTLRVisitor : HwLangBaseVisitor<Node>() {
             return lhs
         }
         val rhs = visitExpression(ctx.binaryOperation_.rhs_) as Expression
-        return BinaryOperation(lhs,ctx.binaryOperation_.op.text, rhs)
+        return BinaryOperation(lhs,ctx.binaryOperation_.op_.text, rhs)
     }
 }

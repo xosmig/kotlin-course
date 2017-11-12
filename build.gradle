@@ -15,17 +15,11 @@ buildscript {
 apply plugin: 'antlr'
 apply plugin: 'java'
 apply plugin: 'kotlin'
-apply plugin: "jacoco"
 
 sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
-}
-
-jacoco {
-    toolVersion = "0.7.9"
-    reportsDir = file("$buildDir/customJacocoReportDir")
 }
 
 generateGrammarSource {
@@ -49,12 +43,4 @@ compileKotlin {
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled false
-        csv.enabled false
-        html.destination file("${buildDir}/jacocoHtml")
-    }
 }

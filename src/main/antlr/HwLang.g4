@@ -13,11 +13,9 @@ assignment : name_=IDENTIFIER '=' expr_=expression;
 returnSt : RETURN expr_=expression;
 expression : lhs_=lhsExpression binaryOperation_=binaryOperation?;
 lhsExpression : functionCall | reference | literal | '(' expression ')';
-binaryOperation
-    : op='+' rhs_=expression
-    | op='-' rhs_=expression
-    | op='<=' rhs_=expression
-    ;
+binaryOperation :
+    op_=('+' | '-' | '*' | '/' | '%' | '>' | '<' | '>=' | '<=' | '==' | '!=' | '||' | '&&')
+    rhs_=expression;
 functionCall : name_=IDENTIFIER '(' args_=arguments ')';
 arguments : (expression (',' expression)*)?;
 
