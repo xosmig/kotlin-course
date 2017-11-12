@@ -4,7 +4,10 @@ import java.io.OutputStream
 import java.util.*
 import kotlin.collections.HashMap
 
-sealed class Statement {
+// Node = File | Statement
+sealed class Node
+
+sealed class Statement: Node() {
     abstract fun perform(ctx: Context)
 }
 
@@ -82,7 +85,7 @@ class Context(val stdout: OutputStream) {
     }
 }
 
-data class File(val block: Block) {
+data class File(val block: Block): Node() {
     fun perform(stdout: OutputStream = System.out) {
         block.perform(Context(stdout))
     }
@@ -106,10 +109,12 @@ data class While(val cond: Expression, val block: Block): Statement() {
     }
 }
 
-data class If(val cond: Expression, val block: Block): Statement() {
+data class If(val cond: Expression, val thenBlock: Block, val elseBlock: Block? = null): Statement() {
     override fun perform(ctx: Context) {
         if (cond.evaluate(ctx) != 0) {
-            block.perform(ctx)
+            thenBlock.perform(ctx)
+        } else {
+            elseBlock?.perform(ctx)
         }
     }
 }
@@ -161,7 +166,7 @@ data class LessEqual(val lhs: Expression, val rhs: Expression): Expression() {
 //class Modulo(lhs: Expression, rhs: Expression): BinaryExpression(lhs, rhs)
 //class Greater(lhs: Expression, rhs: Expression): BinaryExpression(lhs, rhs)
 //class Less(lhs: Expression, rhs: Expression): BinaryExpression(lhs, rhs)
-// TODO: >=, <=, ==, !=, ||, &&
+// TODO: >=, ==, !=, ||, &&
 
 data class Reference(val name: String): Expression() {
     override fun evaluate(ctx: Context): Int = ctx.getVar(name)

@@ -1,5 +1,7 @@
 package ru.spbau.mit
 
+import ru.spbau.mit.parser.*
+
 fun getGreeting(): String {
     val words = mutableListOf<String>()
     words.add("Hello,")
