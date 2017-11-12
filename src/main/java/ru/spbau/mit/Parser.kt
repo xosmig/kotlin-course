@@ -1,7 +1,7 @@
 package ru.spbau.mit
 
-import org.antlr.v4.runtime.CharStreams
-import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.*
+import org.antlr.v4.runtime.tree.ErrorNode
 import ru.spbau.mit.parser.HwLangBaseVisitor
 import ru.spbau.mit.parser.HwLangLexer
 import ru.spbau.mit.parser.HwLangParser
@@ -12,7 +12,11 @@ object Parser {
         val lexer = HwLangLexer(CharStreams.fromStream(sourceCodeStream))
         val tokens = CommonTokenStream(lexer)
         val parser = HwLangParser(tokens)
-        return ANTLRVisitor.visit(parser.file()) as File
+        val fileCtx = parser.file()
+        if (fileCtx.exception != null) {
+            throw fileCtx.exception
+        }
+        return ANTLRVisitor.visit(fileCtx) as File
     }
 }
 
@@ -65,5 +69,9 @@ object ANTLRVisitor : HwLangBaseVisitor<Node>() {
         }
         val rhs = visitExpression(ctx.binaryOperation_.rhs_) as Expression
         return BinaryOperation(lhs,ctx.binaryOperation_.op_.text, rhs, ctx.start.line)
+    }
+
+    override fun visitErrorNode(node: ErrorNode?): Node {
+        return super.visitErrorNode(node)
     }
 }
