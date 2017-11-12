@@ -43,7 +43,13 @@ class IntegrationTest {
 
     @Test
     fun associativityTest() {
-//        recordResult("returnExample")
+//        recordResult("associativity")
         integrationTest("associativity")
+    }
+
+    @Test
+    fun priorityTest() {
+//        recordResult("priority")
+        integrationTest("priority")
     }
 }

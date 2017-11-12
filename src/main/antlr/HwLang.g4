@@ -17,9 +17,21 @@ expression
     : functionCall
     | reference
     | literal
-    | '(' expression ')'
+    | '(' braced_=expression ')'
     | lhs_=expression
-        binOp_=('+' | '-' | '*' | '/' | '%' | '>' | '<' | '>=' | '<=' | '==' | '!=' | '||' | '&&')
+        binOp_=('*' | '/' | '%')
+      rhs_=expression
+    | lhs_=expression
+        binOp_=('+' | '-')
+      rhs_=expression
+    | lhs_=expression
+        binOp_=('>' | '<' | '>=' | '<=' | '==' | '!=')
+      rhs_=expression
+    | lhs_=expression
+        binOp_='&&'
+      rhs_=expression
+    | lhs_=expression
+        binOp_='||'
       rhs_=expression
     ;
 functionCall : name_=IDENTIFIER '(' args_=arguments ')';

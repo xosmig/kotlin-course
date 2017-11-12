@@ -70,14 +70,14 @@ object ANTLRVisitor : HwLangBaseVisitor<Node>() {
             Literal(ctx.text.toInt(), ctx.start.line)
 
     override fun visitExpression(ctx: HwLangParser.ExpressionContext): Node {
-        if (ctx.binOp_ != null) {
-            return BinaryOperation(
+        return when {
+            ctx.binOp_ != null -> BinaryOperation(
                     visit(ctx.lhs_) as Expression,
                     ctx.binOp_.text,
                     visit(ctx.rhs_) as Expression,
                     ctx.start.line)
-        } else {
-            return visitChildren(ctx)
+            ctx.braced_ != null -> visit(ctx.braced_)
+            else -> visitChildren(ctx)
         }
     }
 }
