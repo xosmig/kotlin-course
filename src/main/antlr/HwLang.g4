@@ -22,7 +22,7 @@ functionCall : name_=IDENTIFIER '(' args_=arguments ')';
 arguments : (expression (',' expression)*)?;
 
 reference : name_=IDENTIFIER;
-literal : LITERAL;
+literal : '-'? LITERAL;
 
 IF : 'if';
 FUN : 'fun';

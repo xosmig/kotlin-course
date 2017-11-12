@@ -18,24 +18,25 @@ class InterpreterTest : InterpreterTestBase() {
     }
 
     @Test
-    fun fibTest() {
+    fun recursionTest() {
         val ast = File(Block(listOf(
                 Function("fib", listOf("n"), Block(listOf(
-                        If(LessEqual(Reference("n"), Literal(1)), Block(listOf(
+                        If(BinaryOperation(Reference("n"), "<=", Literal(1)), Block(listOf(
                                 Return(Literal(1))
                         ))),
-                        Return(Plus(
-                                FunctionCall("fib", listOf(Minus(Reference("n"), Literal(1)))),
-                                FunctionCall("fib", listOf(Minus(Reference("n"), Literal(2))))
-                        )
-                )))),
+                        Return(BinaryOperation(
+                                FunctionCall("fib", listOf(BinaryOperation(Reference("n"), "-", Literal(1)))),
+                                "+",
+                                FunctionCall("fib", listOf(BinaryOperation(Reference("n"), "-", Literal(2))))
+                        ))
+                ))),
                 Variable("i", Literal(1)),
-                While (LessEqual(Reference("i"), Literal(5)), Block(listOf(
+                While (BinaryOperation(Reference("i"), "<=", Literal(5)), Block(listOf(
                         FunctionCall("println", listOf(
                                 Reference("i"),
                                 FunctionCall("fib", listOf(Reference("i")))
                         )),
-                        Assignment("i", Plus(Reference("i"), Literal(1)))
+                        Assignment("i", BinaryOperation(Reference("i"), "+", Literal(1)))
                 )))
         )))
         checkOutput(ast, """
@@ -46,5 +47,143 @@ class InterpreterTest : InterpreterTestBase() {
             |5, 8
             |
         """.trimMargin())
+    }
+
+    @Test
+    fun functionCallContextTest1() {
+        val ast = File(Block(listOf(
+                Function("foo", listOf("a", "b"), Block(listOf(
+                        FunctionCall("println", listOf(Reference("a"), Reference("b")))
+                ))),
+                Variable("a", Literal(2)),
+                FunctionCall("foo", listOf(Literal(1), Reference("a")))
+        )))
+        // Possible wrong output: 2, 2
+        checkOutput(ast, """
+            |1, 2
+            |
+        """.trimMargin())
+    }
+
+    @Test
+    fun functionCallContextTest2() {
+
+    }
+
+    @Test
+    fun declarationOrderTest() {
+        // One should be able to reference a variable which is declared later in the same file
+        val ast = File(Block(listOf(
+                Function("foo", listOf(), Block(listOf(
+                        FunctionCall("println", listOf(Reference("a")))
+                ))),
+                Variable("a", Literal(1)),
+                FunctionCall("foo", listOf())
+        )))
+        // Possible wrong output: error
+        checkOutput(ast, """
+            |1
+            |
+        """.trimMargin())
+    }
+
+    @Test(expected = UnknownVariableException::class)
+    fun wrongContextTest() {
+        val ast = File(Block(listOf(
+                Function("foo", listOf(), Block(listOf(
+                        FunctionCall("println", listOf(Reference("a")))
+                ))),
+                Function("bar", listOf(), Block(listOf(
+                        Variable("a", Literal(1)),
+                        FunctionCall("foo", listOf())
+                ))),
+                FunctionCall("bar", listOf())
+        )))
+        // Possible wrong output: 1
+        checkOutput(ast, "")
+    }
+
+    @Test
+    fun indirectRecursionTest() {
+        val ast = File(Block(listOf(
+                Function("foo", listOf("a"), Block(listOf(
+                        If(Reference("a"), Block(listOf(
+                                FunctionCall("println", listOf(Reference("a")))
+                        )), Block(listOf(
+                                FunctionCall("bar", listOf(Reference("a")))
+                        )))
+                ))),
+                Function("bar", listOf("a"), Block(listOf(
+                        FunctionCall("foo", listOf(BinaryOperation(Reference("a"), "+", Literal(3))))
+                ))),
+                FunctionCall("foo", listOf(Literal(0)))
+        )))
+        // Possible wrong output: error
+        checkOutput(ast, "3\n")
+    }
+
+    @Test
+    fun shadowingTest() {
+        val ast = File(Block(listOf(
+                Variable("a", Literal(3)),
+                Function("foo", listOf(), Block(listOf(
+                        Variable("a", Literal(1)),
+                        FunctionCall("println", listOf(Reference("a")))
+                ))),
+                Function("bar", listOf("a"), Block(listOf(
+                        FunctionCall("println", listOf(Reference("a"))),
+                        Assignment("a", Literal(-1))
+                ))),
+                FunctionCall("foo", listOf()),
+                FunctionCall("bar", listOf(Literal(2))),
+                FunctionCall("println", listOf(Reference("a")))
+        )))
+        // Possible wrong output: 0 or error
+        checkOutput(ast, "1\n2\n3\n")
+    }
+
+    @Test(expected = VariableRedeclarationException::class)
+    fun variableRedeclarationTest() {
+        val ast = File(Block(listOf(
+                Variable("a", Literal(1)),
+                Variable("a", Literal(2))
+        )))
+        // Possible wrong output: non error
+        checkOutput(ast, "")
+    }
+
+    @Test(expected = FunctionRedeclarationException::class)
+    fun functionRedeclarationTest() {
+        // overloading is not supported
+        val ast = File(Block(listOf(
+                Function("foo", listOf(), Block(listOf())),
+                Function("foo", listOf("a"), Block(listOf()))
+        )))
+        // Possible wrong output: non error
+        checkOutput(ast, "")
+    }
+
+    @Test(expected = VariableRedeclarationException::class)
+    fun parameterShadowingTest() {
+        // overloading is not supported
+        val ast = File(Block(listOf(
+                Function("foo", listOf("a"), Block(listOf(
+                        Variable("a")
+                ))),
+                FunctionCall("foo", listOf(Literal(1)))
+        )))
+        // Possible wrong output: non error
+        checkOutput(ast, "")
+    }
+
+    @Test(expected = WrongNumberOfArgsException::class)
+    fun wrongNumberOfArgsTest() {
+        // overloading is not supported
+        val ast = File(Block(listOf(
+                Function("foo", listOf("a"), Block(listOf())),
+                FunctionCall("foo", listOf(Literal(1), Literal(2)))
+        )))
+        // Possible wrong output: non error
+        checkOutput(ast, "")
     }
 }
