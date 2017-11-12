@@ -4,7 +4,12 @@ import java.io.FileInputStream
 
 fun interpretFile(path: String) {
     FileInputStream(path).use {
-        Parser.parse(it).perform()
+        try {
+            Parser.parse(it).perform()
+        } catch (e: Exception) {
+            println(e)
+            System.exit(3)
+        }
     }
 }
 

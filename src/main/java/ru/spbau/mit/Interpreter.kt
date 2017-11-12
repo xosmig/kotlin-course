@@ -23,13 +23,13 @@ data class Function(val name: String, val argsNames: List<String>, val block: Bl
         private set
     override fun perform(ctx: Context) {
         declCtx = ctx
-        ctx.addFun(name, this)
+        ctx.addFun(name, this, line)
     }
 }
 
 data class Variable(val name: String, val expr: Expression? = null, override val line: Int = 0): Statement() {
     override fun perform(ctx: Context) {
-        ctx.addVar(name, expr?.evaluate(ctx) ?: 0)
+        ctx.addVar(name, expr?.evaluate(ctx) ?: 0, line)
     }
 }
 
@@ -69,13 +69,13 @@ data class FunctionCall(val name: String, val argsExprs: List<Expression>,
         }
 
         try {
-            val func = ctx.getFun(name)
+            val func = ctx.getFun(name, line)
             if (func.argsNames.size != argsExprs.size) {
-                throw WrongNumberOfArgsException(name, func.argsNames.size, argsExprs.size, ctx)
+                throw WrongNumberOfArgsException(name, func.argsNames.size, argsExprs.size, ctx, line)
             }
             val newCtx = func.declCtx!!.addStackFrame()
             for ((name, expr) in func.argsNames.zip(argsExprs)) {
-                newCtx.addVar(name, expr.evaluate(ctx))
+                newCtx.addVar(name, expr.evaluate(ctx), line)
             }
             func.block.perform(newCtx)
         } catch (ret: ReturnException) {
@@ -106,13 +106,13 @@ data class BinaryOperation(val lhs: Expression, val op: String, val rhs: Express
         "!=" -> boolToInt(lhs.evaluate(ctx) != rhs.evaluate(ctx))
         "||" -> boolToInt(intToBool(lhs.evaluate(ctx)) || intToBool(rhs.evaluate(ctx)))
         "&&" -> boolToInt(intToBool(lhs.evaluate(ctx)) && intToBool(rhs.evaluate(ctx)))
-        else -> throw TODO()
+        else -> throw UnsupportedBinaryOperation(op, line)
     }
 }
 
 data class Reference(val name: String,
                      override val line: Int = 0): Expression() {
-    override fun evaluate(ctx: Context): Int = ctx.getVar(name)
+    override fun evaluate(ctx: Context): Int = ctx.getVar(name, line)
 }
 
 data class Literal(val value: Int, override val line: Int = 0): Expression() {
@@ -124,7 +124,7 @@ data class Return(val expr: Expression, override val line: Int = 0): Statement()
 }
 
 data class Assignment(val name: String, val expr: Expression, override val line: Int = 0): Statement() {
-    override fun perform(ctx: Context) = ctx.assignVar(name, expr.evaluate(ctx))
+    override fun perform(ctx: Context) = ctx.assignVar(name, expr.evaluate(ctx), line)
 }
 
 data class Block(val statements: List<Statement>, override val line: Int = 0): Statement() {
@@ -145,4 +145,6 @@ object Builtin {
 data class ReturnException(val value: Int): Exception()
 
 data class WrongNumberOfArgsException(val name: String, val expected: Int, val action: Int,
-                                      val ctx: Context): Exception()
+                                      val ctx: Context, val line: Int): Exception()
+
+data class UnsupportedBinaryOperation(val op: String, val line: Int): Exception()

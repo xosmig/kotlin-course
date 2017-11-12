@@ -178,10 +178,18 @@ class InterpreterTest : InterpreterTestBase() {
 
     @Test(expected = WrongNumberOfArgsException::class)
     fun wrongNumberOfArgsTest() {
-        // overloading is not supported
         val ast = File(Block(listOf(
                 Function("foo", listOf("a"), Block(listOf())),
                 FunctionCall("foo", listOf(Literal(1), Literal(2)))
+        )))
+        // Possible wrong output: non error
+        checkOutput(ast, "")
+    }
+
+    @Test(expected = UnsupportedBinaryOperation::class)
+    fun unsupportedBinaryOperationTest() {
+        val ast = File(Block(listOf(
+                BinaryOperation(Literal(1), "+++", Literal(2))
         )))
         // Possible wrong output: non error
         checkOutput(ast, "")

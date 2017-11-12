@@ -4,25 +4,25 @@ import java.io.OutputStream
 
 interface Context {
     val stdout: OutputStream
-    fun getVar(name: String): Int
-    fun addVar(name: String, value: Int)
-    fun assignVar(name: String, value: Int)
-    fun getFun(name: String): Function
-    fun addFun(name: String, func: Function)
+    fun getVar(name: String, line: Int): Int
+    fun addVar(name: String, value: Int, line: Int)
+    fun assignVar(name: String, value: Int, line: Int)
+    fun getFun(name: String, line: Int): Function
+    fun addFun(name: String, func: Function, line: Int)
     fun addStackFrame(): Context = StackFrame(this)
 }
 
 class RootContext(override val stdout: OutputStream): Context {
-    override fun getVar(name: String): Int =
-            throw UnknownVariableException(name)
-    override fun addVar(name: String, value: Int) =
-            throw TODO()
-    override fun assignVar(name: String, value: Int) =
-            throw TODO()
-    override fun getFun(name: String): Function =
-            throw UnknownFunctionException(name)
-    override fun addFun(name: String, func: Function) =
-            throw TODO()
+    override fun getVar(name: String, line: Int): Int =
+            throw UnknownVariableException(name, line)
+    override fun addVar(name: String, value: Int, line: Int) =
+            throw AssertionError("This function should never be called on RootContext")
+    override fun assignVar(name: String, value: Int, line: Int) =
+            throw AssertionError("This function should never be called on RootContext")
+    override fun getFun(name: String, line: Int): Function =
+            throw UnknownFunctionException(name, line)
+    override fun addFun(name: String, func: Function, line: Int) =
+            throw AssertionError("This function should never be called on RootContext")
 }
 
 private class StackFrame(val parent: Context): Context {
@@ -31,36 +31,36 @@ private class StackFrame(val parent: Context): Context {
 
     override val stdout: OutputStream get() = parent.stdout
 
-    override fun getVar(name: String): Int = vars[name] ?: parent.getVar(name)
+    override fun getVar(name: String, line: Int): Int = vars[name] ?: parent.getVar(name, line)
 
-    override fun addVar(name: String, value: Int) {
+    override fun addVar(name: String, value: Int, line: Int) {
         if (name in vars) {
-            throw VariableRedeclarationException(name)
+            throw VariableRedeclarationException(name, line)
         } else {
             vars[name] = value
         }
     }
 
-    override fun assignVar(name: String, value: Int) {
+    override fun assignVar(name: String, value: Int, line: Int) {
         if (name in vars) {
             vars[name] = value
         } else {
-            parent.assignVar(name, value)
+            parent.assignVar(name, value, line)
         }
     }
 
-    override fun getFun(name: String): Function = funs[name] ?: parent.getFun(name)
+    override fun getFun(name: String, line: Int): Function = funs[name] ?: parent.getFun(name, line)
 
-    override fun addFun(name: String, func: Function) {
+    override fun addFun(name: String, func: Function, line: Int) {
         if (name in funs) {
-            throw FunctionRedeclarationException(name)
+            throw FunctionRedeclarationException(name, line)
         } else {
             funs[name] = func
         }
     }
 }
 
-data class UnknownVariableException(val name: String): Exception()
-data class UnknownFunctionException(val name: String): Exception()
-data class VariableRedeclarationException(val name: String): Exception()
-data class FunctionRedeclarationException(val name: String): Exception()
+data class UnknownVariableException(val name: String, val line: Int): Exception()
+data class UnknownFunctionException(val name: String, val line: Int): Exception()
+data class VariableRedeclarationException(val name: String, val line: Int): Exception()
+data class FunctionRedeclarationException(val name: String, val line: Int): Exception()
