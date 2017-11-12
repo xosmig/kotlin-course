@@ -1,29 +1,25 @@
 package ru.spbau.mit
 
-import org.junit.Assert.assertArrayEquals
 import org.junit.Test
-import java.io.ByteArrayOutputStream
 
-class TreeInterpreterTest {
+class InterpreterTest : InterpreterTestBase() {
+
     @Test
     fun helloWorldTest() {
-        val stdout = ByteArrayOutputStream()
-        File(Block(listOf(
-                PrintlnCall(listOf(
+        val ast = File(Block(listOf(
+                FunctionCall("println", listOf(
                         Literal(43110), Literal(111)
                 ))
-        ))).perform(stdout)
-        val expected = """
+        )))
+        checkOutput(ast, """
             |43110, 111
             |
-        """.trimMargin()
-        assertArrayEquals(expected.toByteArray(), stdout.toByteArray())
+        """.trimMargin())
     }
 
     @Test
     fun fibTest() {
-        val stdout = ByteArrayOutputStream()
-        File(Block(listOf(
+        val ast = File(Block(listOf(
                 Function("fib", listOf("n"), Block(listOf(
                         If(LessEqual(Reference("n"), Literal(1)), Block(listOf(
                                 Return(Literal(1))
@@ -35,21 +31,20 @@ class TreeInterpreterTest {
                 )))),
                 Variable("i", Literal(1)),
                 While (LessEqual(Reference("i"), Literal(5)), Block(listOf(
-                        PrintlnCall(listOf(
+                        FunctionCall("println", listOf(
                                 Reference("i"),
                                 FunctionCall("fib", listOf(Reference("i")))
                         )),
                         Assignment("i", Plus(Reference("i"), Literal(1)))
                 )))
-        ))).perform(stdout)
-        val expected = """
+        )))
+        checkOutput(ast, """
             |1, 1
             |2, 2
             |3, 3
             |4, 5
             |5, 8
             |
-        """.trimMargin()
-        assertArrayEquals(expected.toByteArray(), stdout.toByteArray())
+        """.trimMargin())
     }
 }

@@ -4,9 +4,10 @@ import java.io.OutputStream
 import java.util.*
 import kotlin.collections.HashMap
 
-// Node = File | Statement
+/** Node = File | Statement */
 sealed class Node
 
+/** Statement = Function | Variable | Expression | While | If | Assignment| Return */
 sealed class Statement: Node() {
     abstract fun perform(ctx: Context)
 }
@@ -95,9 +96,9 @@ data class Function(val name: String, val argsNames: List<String>, val block: Bl
     override fun perform(ctx: Context) = ctx.addFun(name, this)
 }
 
-data class Variable(val name: String, val expr: Expression): Statement() {
+data class Variable(val name: String, val expr: Expression? = null): Statement() {
     override fun perform(ctx: Context) {
-        ctx.addVar(name, expr.evaluate(ctx))
+        ctx.addVar(name, expr?.evaluate(ctx) ?: 0)
     }
 }
 
@@ -129,6 +130,10 @@ sealed class Expression: Statement() {
 
 data class FunctionCall(val name: String, val argsExprs: List<Expression>): Expression() {
     override fun evaluate(ctx: Context): Int {
+        if (name == "println") {
+            return Builtin.println(argsExprs, ctx)
+        }
+
         ctx.addStackFrame()
         try {
             val func = ctx.getFun(name)
@@ -147,7 +152,6 @@ data class FunctionCall(val name: String, val argsExprs: List<Expression>): Expr
         return 0
     }
 }
-
 
 data class Plus(val lhs: Expression, val rhs: Expression): Expression() {
     override fun evaluate(ctx: Context): Int = lhs.evaluate(ctx) + rhs.evaluate(ctx)
@@ -197,9 +201,10 @@ data class Block(val statements: List<Statement>): Statement() {
     }
 }
 
-data class PrintlnCall(val args: List<Expression>): Statement() {
-    override fun perform(ctx: Context) {
-        ctx.stdout.write(args.joinToString(postfix = "\n") { it.evaluate(ctx).toString() }.toByteArray())
+object Builtin {
+    fun println(argsExprs: List<Expression>, ctx: Context): Int {
+        ctx.stdout.write(argsExprs.joinToString(postfix = "\n") { it.evaluate(ctx).toString() }.toByteArray())
+        return 0
     }
 }
 

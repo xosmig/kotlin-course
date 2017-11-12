@@ -1,13 +1,22 @@
 package ru.spbau.mit
 
-import org.antlr.runtime.ANTLRInputStream
+import org.antlr.v4.runtime.CharStreams
+import org.antlr.v4.runtime.CommonTokenStream
 import ru.spbau.mit.parser.HwLangBaseVisitor
 import ru.spbau.mit.parser.HwLangLexer
 import ru.spbau.mit.parser.HwLangParser
 import java.io.InputStream
 
-class ANTLRVisitor : HwLangBaseVisitor<Node>() {
+object Parser {
+    fun parse(sourceCodeStream: InputStream): File {
+        val lexer = HwLangLexer(CharStreams.fromStream(sourceCodeStream))
+        val tokens = CommonTokenStream(lexer)
+        val parser = HwLangParser(tokens)
+        return ANTLRVisitor.visit(parser.file()) as File
+    }
+}
 
+object ANTLRVisitor : HwLangBaseVisitor<Node>() {
     override fun visitFile(ctx: HwLangParser.FileContext): Node =
             File(visitBlock(ctx.block_) as Block)
 
