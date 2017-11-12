@@ -1,6 +1,5 @@
 package ru.spbau.mit
 
-import com.sun.org.apache.xpath.internal.operations.Bool
 import java.io.OutputStream
 
 /** Node = File | Statement */
@@ -9,6 +8,7 @@ sealed class Node
 /** Statement = Function | Variable | Expression | While | If | Assignment| Return */
 sealed class Statement: Node() {
     abstract fun perform(ctx: Context)
+    abstract val line: Int
 }
 
 data class File(val block: Block): Node() {
@@ -17,7 +17,8 @@ data class File(val block: Block): Node() {
     }
 }
 
-data class Function(val name: String, val argsNames: List<String>, val block: Block): Statement() {
+data class Function(val name: String, val argsNames: List<String>, val block: Block,
+                    override val line: Int = 0) : Statement() {
     var declCtx: Context? = null
         private set
     override fun perform(ctx: Context) {
@@ -26,13 +27,13 @@ data class Function(val name: String, val argsNames: List<String>, val block: Bl
     }
 }
 
-data class Variable(val name: String, val expr: Expression? = null): Statement() {
+data class Variable(val name: String, val expr: Expression? = null, override val line: Int = 0): Statement() {
     override fun perform(ctx: Context) {
         ctx.addVar(name, expr?.evaluate(ctx) ?: 0)
     }
 }
 
-data class While(val cond: Expression, val block: Block): Statement() {
+data class While(val cond: Expression, val block: Block, override val line: Int = 0): Statement() {
     override fun perform(ctx: Context) {
         while (cond.evaluate(ctx) != 0) {
             block.perform(ctx.addStackFrame())
@@ -40,7 +41,8 @@ data class While(val cond: Expression, val block: Block): Statement() {
     }
 }
 
-data class If(val cond: Expression, val thenBlock: Block, val elseBlock: Block? = null): Statement() {
+data class If(val cond: Expression, val thenBlock: Block, val elseBlock: Block? = null,
+              override val line: Int = 0): Statement() {
     override fun perform(ctx: Context) {
         if (cond.evaluate(ctx) != 0) {
             thenBlock.perform(ctx.addStackFrame())
@@ -50,6 +52,7 @@ data class If(val cond: Expression, val thenBlock: Block, val elseBlock: Block? 
     }
 }
 
+/** Expression = FunctionCall | BinaryExpression | Reference | Literal */
 sealed class Expression: Statement() {
     abstract fun evaluate(ctx: Context): Int
 
@@ -58,7 +61,8 @@ sealed class Expression: Statement() {
     }
 }
 
-data class FunctionCall(val name: String, val argsExprs: List<Expression>): Expression() {
+data class FunctionCall(val name: String, val argsExprs: List<Expression>,
+                        override val line: Int = 0): Expression() {
     override fun evaluate(ctx: Context): Int {
         if (name == "println") {
             return Builtin.println(argsExprs, ctx.addStackFrame())
@@ -81,7 +85,8 @@ data class FunctionCall(val name: String, val argsExprs: List<Expression>): Expr
     }
 }
 
-data class BinaryOperation(val lhs: Expression, val op: String, val rhs: Expression): Expression() {
+data class BinaryOperation(val lhs: Expression, val op: String, val rhs: Expression,
+                           override val line: Int = 0): Expression() {
     companion object {
         private fun intToBool(value: Int): Boolean = value == 1
         private fun boolToInt(value: Boolean): Int = if (value) 1 else 0
@@ -105,23 +110,24 @@ data class BinaryOperation(val lhs: Expression, val op: String, val rhs: Express
     }
 }
 
-data class Reference(val name: String): Expression() {
+data class Reference(val name: String,
+                     override val line: Int = 0): Expression() {
     override fun evaluate(ctx: Context): Int = ctx.getVar(name)
 }
 
-data class Literal(val value: Int): Expression() {
+data class Literal(val value: Int, override val line: Int = 0): Expression() {
     override fun evaluate(ctx: Context): Int = value
 }
 
-data class Return(val expr: Expression): Statement() {
+data class Return(val expr: Expression, override val line: Int = 0): Statement() {
     override fun perform(ctx: Context) = throw ReturnException(expr.evaluate(ctx))
 }
 
-data class Assignment(val name: String, val expr: Expression): Statement() {
+data class Assignment(val name: String, val expr: Expression, override val line: Int = 0): Statement() {
     override fun perform(ctx: Context) = ctx.assignVar(name, expr.evaluate(ctx))
 }
 
-data class Block(val statements: List<Statement>): Statement() {
+data class Block(val statements: List<Statement>, override val line: Int = 0): Statement() {
     override fun perform(ctx: Context) {
         for (st in statements) {
             st.perform(ctx)

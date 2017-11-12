@@ -32,7 +32,7 @@ class IntegrationTest: InterpreterTestBase() {
             |var i = 1
             |while (i <= 5) {
             |   println(i, fib(i))
-                |i = i + 1
+            |   i = i + 1
             |}
         """.trimMargin()
         checkOutput(code, """
