@@ -1,16 +1,18 @@
 package ru.spbau.mit
 
 import java.io.FileInputStream
+import java.io.OutputStream
 
-fun interpretFile(path: String) {
+fun interpretFile(path: String, stdout: OutputStream = System.out): Int {
     FileInputStream(path).use {
         try {
-            Parser.parse(it).perform()
+            Parser.parse(it).perform(stdout)
         } catch (e: Exception) {
             println(e)
-            System.exit(3)
+            return 3
         }
     }
+    return 0
 }
 
 fun main(args: Array<String>) {
@@ -18,5 +20,5 @@ fun main(args: Array<String>) {
         println("Usage: hwlang source.hw")
         System.exit(2)
     }
-    interpretFile(args[0])
+    System.exit(interpretFile(args[0]))
 }

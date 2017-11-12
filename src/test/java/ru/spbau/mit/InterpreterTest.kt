@@ -1,8 +1,16 @@
 package ru.spbau.mit
 
+import org.junit.Assert
 import org.junit.Test
+import java.io.ByteArrayOutputStream
 
-class InterpreterTest : InterpreterTestBase() {
+class InterpreterTest {
+
+    private fun checkOutput(ast: File, expectedOutput: String) {
+        val stdout = ByteArrayOutputStream()
+        ast.perform(stdout)
+        Assert.assertArrayEquals(expectedOutput.toByteArray(), stdout.toByteArray())
+    }
 
     @Test
     fun helloWorldTest() {

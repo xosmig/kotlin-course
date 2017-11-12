@@ -1,7 +1,9 @@
 grammar HwLang;
 
-
 file : block_=block;
+
+LINE_COMMENT : '//' ~[\r\n]* -> skip;
+
 block : (statement)*;
 statement : function | variable | expression | whileSt | ifSt | assignment | returnSt;
 function : FUN name_=IDENTIFIER '(' params_ = parameterNames ')' '{' block_=block '}';
