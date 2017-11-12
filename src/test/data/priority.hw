@@ -1,1 +1,2 @@
-println((0 - 1) + 1 * 2)
+println((0 - 1) + 1 * 2) // expected: 1, possible wrong: 0
+println(1 || 0 && 0) // expected: 1, possible wrong: 0
