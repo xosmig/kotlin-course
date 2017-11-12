@@ -5,9 +5,16 @@ import org.antlr.v4.runtime.tree.ErrorNode
 import ru.spbau.mit.parser.HwLangBaseVisitor
 import ru.spbau.mit.parser.HwLangLexer
 import ru.spbau.mit.parser.HwLangParser
+import java.io.FileInputStream
 import java.io.InputStream
 
 object Parser {
+    fun parseFile(path: String): File {
+        FileInputStream(path).use {
+            return parse(it)
+        }
+    }
+
     fun parse(sourceCodeStream: InputStream): File {
         val lexer = HwLangLexer(CharStreams.fromStream(sourceCodeStream))
         val tokens = CommonTokenStream(lexer)

@@ -1,16 +1,13 @@
 package ru.spbau.mit
 
-import java.io.FileInputStream
 import java.io.OutputStream
 
 fun interpretFile(path: String, stdout: OutputStream = System.out): Int {
-    FileInputStream(path).use {
-        try {
-            Parser.parse(it).perform(stdout)
-        } catch (e: Exception) {
-            println(e)
-            return 3
-        }
+    try {
+        Parser.parseFile(path).perform(stdout)
+    } catch (e: Exception) {
+        println(e)
+        return 3
     }
     return 0
 }

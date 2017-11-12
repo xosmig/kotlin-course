@@ -27,27 +27,7 @@ class InterpreterTest {
 
     @Test
     fun recursionTest() {
-        val ast = File(Block(listOf(
-                Function("fib", listOf("n"), Block(listOf(
-                        If(BinaryOperation(Reference("n"), "<=", Literal(1)), Block(listOf(
-                                Return(Literal(1))
-                        ))),
-                        Return(BinaryOperation(
-                                FunctionCall("fib", listOf(BinaryOperation(Reference("n"), "-", Literal(1)))),
-                                "+",
-                                FunctionCall("fib", listOf(BinaryOperation(Reference("n"), "-", Literal(2))))
-                        ))
-                ))),
-                Variable("i", Literal(1)),
-                While (BinaryOperation(Reference("i"), "<=", Literal(5)), Block(listOf(
-                        FunctionCall("println", listOf(
-                                Reference("i"),
-                                FunctionCall("fib", listOf(Reference("i")))
-                        )),
-                        Assignment("i", BinaryOperation(Reference("i"), "+", Literal(1)))
-                )))
-        )))
-        checkOutput(ast, """
+        checkOutput(ExampleAst.fibonacci, """
             |1, 1
             |2, 2
             |3, 3
