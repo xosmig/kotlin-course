@@ -2,7 +2,7 @@ package ru.spbau.mit.latex
 
 import java.io.OutputStream
 
-class EnumerateTag(attributes: AttributeList): TextMode("enumerate", attributes) {
+class EnumerateTag(attributes: AttributeList): Tag("enumerate", attributes) {
 
     // public:
     fun item(vararg attributes: Attribute, init: Item.() -> Unit): Item = initTag(Item(attributes), init)

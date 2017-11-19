@@ -2,7 +2,7 @@ package ru.spbau.mit.latex
 
 import java.io.OutputStream
 
-class ItemizeTag(attributes: AttributeList): TextMode("itemize", attributes) {
+class ItemizeTag(attributes: AttributeList): Tag("itemize", attributes) {
 
     // public:
     fun item(vararg attributes: Attribute, init: Item.() -> Unit): Item = initTag(Item(attributes), init)
