@@ -2,24 +2,21 @@ package ru.spbau.mit.latex
 
 import java.io.OutputStream
 
-class BeamerFile: File<BeamerDocument>() {
+fun beamerFile(vararg attributes: Attribute, init: BeamerFile.() -> Unit): BeamerFile =
+        BeamerFile(attributes).apply(init)
 
-    // public
-    override val documentClass: String get() = "beamer"
-
+class BeamerFile(attributes: AttributeList): File<BeamerDocument>("beamer", attributes) {
     override fun document(init: BeamerDocument.() -> Unit): BeamerDocument = initTag(BeamerDocument(), init)
 }
 
-fun beamerFile(init: BeamerFile.() -> Unit): BeamerFile = BeamerFile().apply(init)
-
 class BeamerDocument: Document() {
+
     // public:
     fun frame(vararg attributes: Attribute, init: Frame.() -> Unit): Frame =
             initTag(Frame(attributes), init)
 
     // nested classes:
-    class Frame(override val attributes: AttributeList): TextMode() {
-        override val name: String get() = "frame"
+    class Frame(attributes: AttributeList): TextMode("frame", attributes) {
 
         fun title(title: String): Title = addChild(Title(title))
 

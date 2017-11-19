@@ -7,9 +7,7 @@ abstract class Element {
     // public:
     abstract fun render(os: OutputStream, indent: String)
 
-    fun render(os: OutputStream) = render(os, "")
-
-    fun print() = render(System.out)
+    fun print(os: OutputStream = System.out) = render(os, "")
 
     // protected:
     protected fun renderLine(s: String, os: OutputStream, indent: String) {

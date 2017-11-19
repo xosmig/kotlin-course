@@ -1,6 +1,6 @@
 package ru.spbau.mit.latex
 
-abstract class TextMode: Block() {
+abstract class TextMode(name: String, attributes: AttributeList): Tag(name, attributes) {
 
     // public:
     fun math(init: MathTag.() -> Unit): MathMode = initTag(MathTag(emptyArray()), init)
@@ -20,6 +20,4 @@ abstract class TextMode: Block() {
     fun emptyLine() = addChild(EmptyLine())
 }
 
-class TextTag(override val attributes: AttributeList): TextMode() {
-    override val name: String get() = "text"
-}
+class TextTag(attributes: AttributeList): TextMode("text", attributes)

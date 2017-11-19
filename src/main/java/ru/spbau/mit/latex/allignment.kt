@@ -1,13 +1,7 @@
 package ru.spbau.mit.latex
 
-class FlushleftTag(override val attributes: AttributeList): TextMode() {
-    override val name: String get() = "flushleft"
-}
+class FlushleftTag(attributes: AttributeList): TextMode("flushleft", attributes)
 
-class FlushrightTag(override val attributes: AttributeList): TextMode() {
-    override val name: String get() = "flushright"
-}
+class FlushrightTag(attributes: AttributeList): TextMode("flushright", attributes)
 
-class CenterTag(override val attributes: AttributeList): TextMode() {
-    override val name: String get() = "center"
-}
+class CenterTag(attributes: AttributeList): TextMode("center", attributes)

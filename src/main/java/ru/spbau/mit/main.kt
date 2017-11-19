@@ -3,11 +3,11 @@ package ru.spbau.mit
 import ru.spbau.mit.latex.beamerFile
 
 fun main(args: Array<String>) {
-    beamerFile {
+    beamerFile("12pt") {
         usepackage("babel", "russian" /* varargs */)
 
         document {
-            frame("arg1" to "arg2") {
+            frame {
                 title("frametitle")
 
                 itemize {
@@ -16,7 +16,7 @@ fun main(args: Array<String>) {
                     }
                 }
 
-                customTextBlock("pyglist", "language" to "kotlin") {
+                customTextBlock("pyglist", "language=kotlin") {
                     +"""
                     |val a = 1
                     |
