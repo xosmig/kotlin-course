@@ -3,6 +3,8 @@ package ru.spbau.mit.latex
 abstract class MathMode(name: String, attributes: AttributeList): Tag(name, attributes) {
 
     // public:
+    val times get(): String = "\\times"
+
     fun text(init: TextTag.() -> Unit): TextMode = initTag(TextTag(emptyArray()), init)
 }
 

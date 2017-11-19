@@ -16,7 +16,7 @@ fun main(args: Array<String>) {
                     }
                 }
 
-                customTextBlock("pyglist", "language=kotlin") {
+                customTextTag("pyglist", "language=kotlin") {
                     +"""
                     |val a = 1
                     |

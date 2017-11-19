@@ -17,10 +17,10 @@ abstract class Tag(val name: String, val attributes: AttributeList): Element() {
     val children: List<Element> get() = childrenMutable
 
     // public:
-    fun customTextBlock(name: String, vararg attributes: Attribute, init: CustomTextTag.() -> Unit): CustomTextTag =
+    fun customTextTag(name: String, vararg attributes: Attribute, init: CustomTextTag.() -> Unit): CustomTextTag =
             addChild(CustomTextTag(name, attributes).apply(init))
 
-    fun customMathBlock(name: String, vararg attributes: Attribute, init: CustomMathTag.() -> Unit): CustomMathTag =
+    fun customMathTag(name: String, vararg attributes: Attribute, init: CustomMathTag.() -> Unit): CustomMathTag =
             addChild(CustomMathTag(name, attributes).apply(init))
 
     operator fun String.unaryPlus(): TextElement = addChild(TextElement(this))

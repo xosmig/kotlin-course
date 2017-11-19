@@ -2,7 +2,7 @@ package ru.spbau.mit.latex
 
 import java.io.OutputStream
 
-abstract class File<out D: Document>(documentClass: String, attributes: AttributeList): Tag(documentClass, attributes) {
+abstract class TexFile(documentClass: String, attributes: AttributeList): Tag(documentClass, attributes) {
 
     val documentClass get() = name
 
@@ -15,8 +15,6 @@ abstract class File<out D: Document>(documentClass: String, attributes: Attribut
 
     fun usepackage(packageName: String, vararg params: String) = addChild(Usepackage(packageName))
 
-    abstract fun document(init: D.() -> Unit): D
-
     class Usepackage(val packageName: String): Element() {
         override fun render(os: OutputStream, indent: String) {
             renderLine("\\usepackage{$packageName}", os, indent)
@@ -24,10 +22,15 @@ abstract class File<out D: Document>(documentClass: String, attributes: Attribut
     }
 }
 
-class CustomFile(documentClass: String, attributes: AttributeList): File<CustomDocument>(documentClass, attributes) {
-    override fun document(init: CustomDocument.() -> Unit): CustomDocument =
-            initTag(CustomDocument(), init)
+class CustomFile(documentClass: String, attributes: AttributeList): TexFile(documentClass, attributes) {
+    fun document(init: CustomDocument.() -> Unit): CustomDocument = initTag(CustomDocument(), init)
+}
+
+class Article(attributes: AttributeList): TexFile("article", attributes) {
+    fun document(init: ArticleDocument.() -> Unit): ArticleDocument = initTag(ArticleDocument(), init)
 }
 
 fun customFile(documentClass: String, vararg attributes: Attribute, init: CustomFile.() -> Unit): CustomFile =
         CustomFile(documentClass, attributes).apply(init)
+
+fun article(vararg attributes: Attribute, init: Article.() -> Unit): Article = Article(attributes).apply(init)

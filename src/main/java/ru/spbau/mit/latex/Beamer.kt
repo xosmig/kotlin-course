@@ -5,8 +5,8 @@ import java.io.OutputStream
 fun beamerFile(vararg attributes: Attribute, init: BeamerFile.() -> Unit): BeamerFile =
         BeamerFile(attributes).apply(init)
 
-class BeamerFile(attributes: AttributeList): File<BeamerDocument>("beamer", attributes) {
-    override fun document(init: BeamerDocument.() -> Unit): BeamerDocument = initTag(BeamerDocument(), init)
+class BeamerFile(attributes: AttributeList): TexFile("beamer", attributes) {
+    fun document(init: BeamerDocument.() -> Unit): BeamerDocument = initTag(BeamerDocument(), init)
 }
 
 class BeamerDocument: Document() {

@@ -1,5 +1,7 @@
 package ru.spbau.mit.latex
 
+import java.io.OutputStream
+
 abstract class TextMode(name: String, attributes: AttributeList): Tag(name, attributes) {
 
     // public:
@@ -21,3 +23,7 @@ abstract class TextMode(name: String, attributes: AttributeList): Tag(name, attr
 }
 
 class TextTag(attributes: AttributeList): TextMode("text", attributes)
+
+class EmptyLine: Element() {
+    override fun render(os: OutputStream, indent: String) = renderLine("", os, indent)
+}

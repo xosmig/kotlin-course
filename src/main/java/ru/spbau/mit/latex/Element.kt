@@ -10,22 +10,12 @@ abstract class Element {
     fun print(os: OutputStream = System.out) = render(os, "")
 
     // protected:
-    protected fun renderLine(s: String, os: OutputStream, indent: String) {
-        os.write(s.trimMargin().prependIndent(indent).toByteArray())
+    protected fun renderLine(line: String, os: OutputStream, indent: String) {
+        os.write(line.trimMargin().prependIndent(indent).trimEnd().toByteArray())
         os.write("\n".toByteArray())
     }
 }
 
 class TextElement(val text: String): Element() {
-
-    // public:
     override fun render(os: OutputStream, indent: String) = renderLine(text, os, indent)
 }
-
-class EmptyLine: Element() {
-
-    // public:
-    override fun render(os: OutputStream, indent: String) =
-            renderLine("", os, indent)
-}
-
